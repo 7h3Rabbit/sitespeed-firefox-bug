@@ -20,7 +20,7 @@ jobs:
       if: always()
       run: |
         echo "$(pwd)"
-        testresult=$(docker run --rm -v $(pwd):/sitespeed.io sitespeedio/sitespeed.io:35.0.0 -b ${{ matrix.config }} -n 1 --chrome.includeResponseBodies html --firefox.includeResponseBodies html https://webperf.se)
+        testresult=$(docker run --rm -v $(pwd):/sitespeed.io sitespeedio/sitespeed.io:35.0.0 -b ${{ matrix.browser }} -n 1 --chrome.includeResponseBodies html --firefox.includeResponseBodies html https://webperf.se)
         echo "$testresult"
         path=$(echo "$testresult" | grep -o "/sitespeed.io/.*")
         echo "$path"
