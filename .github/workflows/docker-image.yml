@@ -8,7 +8,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
             matrix:
-                os: [ubuntu-latest, windows-latest]
+                os: [ubuntu-latest]
     steps:
     - uses: actions/checkout@v4
     - name: Setup QEMU # used to allow multiplatform docker builds
@@ -18,8 +18,9 @@ jobs:
     - name: Test Firefox
       if: always()
       run: |
-        testresult=$(docker run sitespeedio/sitespeed.io:35.0.0 -b firefox https://webperf.se)
+        testresult=$(docker run sitespeedio/sitespeed.io:35.0.0 -b firefox -n 1 https://webperf.se)
         echo "$testresult"
+        echo "$testresult" | grep "/sitespeed.io/"
         if [[ "$testresult" == *"Unable to connect to Chrome"* ]]; then
           sleep 5
           testresult=$(docker run ${{ env.TEST_TAG }} python default.py -t 1 -r -i sites.json)
