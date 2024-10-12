@@ -1,0 +1,27 @@
+name: "Docker Image Test"
+on:
+  workflow_dispatch:
+  push:
+    paths:
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+            matrix:
+                os: [ubuntu-latest, windows-latest]
+    steps:
+    - uses: actions/checkout@v4
+    - name: Setup QEMU # used to allow multiplatform docker builds
+      uses: docker/setup-qemu-action@v3
+    - name: Setup Docker Buildx # used to allow multiplatform docker builds
+      uses: docker/setup-buildx-action@v3
+    - name: Test Firefox
+      if: always()
+      run: |
+        testresult=$(docker run sitespeedio/sitespeed.io:35.0.0 -b firefox https://webperf.se)
+        echo "$testresult"
+        if [[ "$testresult" == *"Unable to connect to Chrome"* ]]; then
+          sleep 5
+          testresult=$(docker run ${{ env.TEST_TAG }} python default.py -t 1 -r -i sites.json)
+          echo "$testresult"
+        fi
