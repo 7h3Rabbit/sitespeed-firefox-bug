@@ -16,14 +16,14 @@ jobs:
       uses: docker/setup-qemu-action@v3
     - name: Setup Docker Buildx # used to allow multiplatform docker builds
       uses: docker/setup-buildx-action@v3
-    - name: Test Firefox
+    - name: Test includeResponseBodies using ${{ matrix.browser }}
       if: always()
       run: |
-        echo "$(pwd)"
-        testresult=$(docker run --rm -v $(pwd):/sitespeed.io sitespeedio/sitespeed.io:35.0.0 -b ${{ matrix.browser }} -n 1 --chrome.includeResponseBodies html --firefox.includeResponseBodies html https://webperf.se)
+        command="docker run --rm -v $(pwd):/sitespeed.io sitespeedio/sitespeed.io:35.0.0 -b ${{ matrix.browser }} -n 1 --chrome.includeResponseBodies html --firefox.includeResponseBodies html https://webperf.se"
+        echo "$command"
+        testresult=$($command)
         echo "$testresult"
         path=$(echo "$testresult" | grep -o "/sitespeed.io/.*")
-        echo "$path"
         if [ -n result ]; then
           har_file=$(find $(pwd) -name "browsertime.har")
           if [ -f "$har_file" ]; then
