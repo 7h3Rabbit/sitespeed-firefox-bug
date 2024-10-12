@@ -28,10 +28,15 @@ jobs:
           har_file=$(find $(pwd) -name "browsertime.har")
           if [ -f "$har_file" ]; then
             echo "Found browsertime.har at $har_file"
-            cat "$har_file"
+            content=$(cat "$har_file")
+            if [[ "$content" != *"<!DOCTYPE html>"* ]]; then
+              echo "Error: browsertime.har is not including html file content"
+              exit 1
+            else
+              echo "browsertime.har is OK"
+            fi
           else
             echo "browsertime.har not found in $path"
-            har_file=$(find result -name "browsertime.har")
           fi
         else
           echo "No path found starting with /sitespeed.io/"
