@@ -18,13 +18,12 @@ jobs:
     - name: Test Firefox
       if: always()
       run: |
-        testresult=$(docker run --name sitespeedio_run sitespeedio/sitespeed.io:35.0.0 -b firefox -n 1 https://webperf.se)
+        testresult=$(docker run --rm -v result:/sitespeed.io sitespeedio/sitespeed.io:35.0.0 -b firefox -n 1 https://webperf.se)
         echo "$testresult"
         path=$(echo "$testresult" | grep -o "/sitespeed.io/.*")
         echo "$path"
-        docker cp sitespeedio_run:$path/ ./result
-        if [ -n ./result ]; then
-          har_file=$(find .result -name "browsertime.har")
+        if [ -n result ]; then
+          har_file=$(find result -name "browsertime.har")
           if [ -f "$har_file" ]; then
             echo "Found browsertime.har at $har_file"
             cat "$har_file"
