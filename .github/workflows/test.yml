@@ -7,8 +7,8 @@ jobs:
   build:
     runs-on: ${{ matrix.os }}
     strategy:
-            matrix:
-                os: [ubuntu-latest]
+      matrix:
+        os: [ubuntu-latest]
     steps:
     - uses: actions/checkout@v4
     - name: Setup QEMU # used to allow multiplatform docker builds
@@ -20,17 +20,25 @@ jobs:
       run: |
         testresult=$(docker run --name sitespeedio_run sitespeedio/sitespeed.io:35.0.0 -b firefox -n 1 https://webperf.se)
         echo "$testresult"
+        if [[ "$testresult" == *"Unable to connect to Chrome"* ]]; then
+          sleep 5
+          testresult=$(docker run --name test_run ${{ env.TEST_TAG }} python default.py -t 1 -r -i sites.json)
+          echo "$testresult"
+        fi
+        # Extract paths starting with "/sitespeed.io/" and ending at the end of the line
         path=$(echo "$testresult" | grep -o "/sitespeed.io/.*")
-        echo "$path"
-        docker cp sitespeedio_run:$path/ ./result
-        if [ -n ./result ]; then
-          har_file=$(find .result -name "browsertime.har")
-          if [ -f "$har_file" ]; then
-            echo "Found browsertime.har at $har_file"
-            cat "$har_file"
+        echo "Extracted path: $path"
+        # Look for browsertime.har in the Docker container and output its content
+        if [ -n "$path" ]; then
+          docker cp sitespeedio_run:$path/browsertime.har ./browsertime.har
+          if [ -f "./browsertime.har" ]; then
+            echo "Found browsertime.har"
+            cat ./browsertime.har
           else
             echo "browsertime.har not found in $path"
           fi
         else
           echo "No path found starting with /sitespeed.io/"
         fi
+        # Clean up Docker container
+        docker rm sitespeedio_run
